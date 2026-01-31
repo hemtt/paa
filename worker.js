@@ -9,13 +9,13 @@ async function resizeImage(uint8Array, targetWidth, targetHeight) {
         // Create blob and read as image
         const blob = new Blob([uint8Array]);
         const url = URL.createObjectURL(blob);
-        
+
         // Use bitmap to avoid DOM access in worker
         createImageBitmap(blob).then(bitmap => {
             const canvas = new OffscreenCanvas(targetWidth, targetHeight);
             const ctx = canvas.getContext('2d');
             ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
-            
+
             canvas.convertToBlob({ type: 'image/png' }).then(resultBlob => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -43,11 +43,11 @@ function extractPngDimensions(uint8Array) {
     // PNG signature: 137 80 78 71 13 10 26 10
     // Width and height are at bytes 16-24 (big-endian)
     if (uint8Array.length < 24) return null;
-    
+
     const view = new DataView(uint8Array.buffer, uint8Array.byteOffset);
     const width = view.getUint32(16, false); // big-endian
     const height = view.getUint32(20, false); // big-endian
-    
+
     return { width, height };
 }
 
@@ -78,12 +78,12 @@ self.onmessage = async (event) => {
 
     try {
         let uint8Array = new Uint8Array(fileData);
-        
+
         // Resize if needed
         if (targetWidth && targetHeight && fileType === 'image') {
             uint8Array = await resizeImage(uint8Array, targetWidth, targetHeight);
         }
-        
+
         let outputData;
         let outputExtension;
         let conversionFormat = null;
@@ -98,7 +98,7 @@ self.onmessage = async (event) => {
             outputData = new Uint8Array(wasmBuffer, ptr, len).slice();
             result.free?.();
             outputExtension = 'png';
-            
+
             // Extract dimensions from PNG
             outputDimensions = extractPngDimensions(outputData);
         } else {

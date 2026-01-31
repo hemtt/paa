@@ -33,22 +33,6 @@ function initWorker() {
     };
 }
 
-// Initialize WASM (kept for compatibility, but worker will handle it)
-async function initWasm() {
-    try {
-        const wasmModule = await init();
-        wasmMemoryBuffer = wasmModule.memory;
-        if (!wasmMemoryBuffer) {
-            throw new Error('WASM memory not available after initialization');
-        }
-        wasmReady = true;
-        console.log('WASM initialized successfully');
-    } catch (error) {
-        console.error('Failed to initialize WASM:', error);
-        showToast('Failed to initialize converter', 'error');
-    }
-}
-
 // File size formatting
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 B';
@@ -84,7 +68,7 @@ function findPowerOfTwoResizeOptions(width, height) {
     // Check power-of-two sizes from 256 to 4096
     for (let pow = 8; pow <= 12; pow++) {
         const size = Math.pow(2, pow);
-        
+
         // Try as width
         const heightFromWidth = Math.round(size / aspectRatio);
         if (isPowerOfTwo(heightFromWidth) && heightFromWidth >= 256 && heightFromWidth <= 4096) {
@@ -93,7 +77,7 @@ function findPowerOfTwoResizeOptions(width, height) {
                 options.push({ width: size, height: heightFromWidth });
             }
         }
-        
+
         // Try as height
         const widthFromHeight = Math.round(size * aspectRatio);
         if (isPowerOfTwo(widthFromHeight) && widthFromHeight >= 256 && widthFromHeight <= 4096) {
@@ -141,6 +125,7 @@ const fileInput = document.getElementById('file-input');
 const queueContainer = document.getElementById('queue-container');
 const clearBtn = document.getElementById('clear-btn');
 const downloadZipBtn = document.getElementById('download-zip-btn');
+const downloadAllBtn = document.getElementById('download-all-btn');
 const errorToast = document.getElementById('error-toast');
 
 // Create modal for dimension confirmation
@@ -191,7 +176,7 @@ function showDimensionConfirmation(filename, width, height, options) {
                 };
                 optionsDiv.appendChild(btn);
             });
-            
+
             // Add "Convert Anyway" as a warning option
             const asIsBtn = document.createElement('button');
             asIsBtn.className = 'btn-option btn-option-danger';
@@ -203,7 +188,7 @@ function showDimensionConfirmation(filename, width, height, options) {
             optionsDiv.appendChild(asIsBtn);
         } else {
             message.innerHTML += `<br><br><span style="color: var(--warning-color);">⚠ This image cannot be resized to a power-of-two while maintaining its aspect ratio.</span>`;
-            
+
             // Add "Convert Anyway" as a warning option
             const continueBtn = document.createElement('button');
             continueBtn.className = 'btn-option btn-option-danger';
@@ -249,6 +234,7 @@ clearBtn.addEventListener('click', () => {
 });
 
 downloadZipBtn.addEventListener('click', downloadAllAsZip);
+downloadAllBtn.addEventListener('click', downloadAll);
 
 // Handle file selection
 async function handleFiles(files) {
@@ -262,24 +248,24 @@ async function handleFiles(files) {
         let dimensionWarning = null;
         let dimensions = null;
         let targetDimensions = null;
-        
+
         // Check dimensions for image files
         if (fileType === 'image') {
             try {
                 const dims = await getImageDimensions(file);
                 dimensions = dims;
-                
+
                 if (!isPowerOfTwo(dims.width) || !isPowerOfTwo(dims.height)) {
                     // Find resize options
                     const options = findPowerOfTwoResizeOptions(dims.width, dims.height);
-                    
+
                     // Show confirmation modal
                     const result = await showDimensionConfirmation(file.name, dims.width, dims.height, options);
-                    
+
                     if (result.cancelled) {
                         continue; // Skip this file
                     }
-                    
+
                     if (result.resize) {
                         targetDimensions = { width: result.targetWidth, height: result.targetHeight };
                         dimensionWarning = `Will resize from ${dims.width}×${dims.height} to ${result.targetWidth}×${result.targetHeight}`;
@@ -324,11 +310,13 @@ async function handleFiles(files) {
 function updateQueueUI() {
     const hasItems = allFiles.length > 0;
     clearBtn.disabled = !hasItems;
-    
+
     // Show download zip button if 2+ files completed
     const completedCount = allFiles.filter(f => f.status === 'completed').length;
     downloadZipBtn.disabled = completedCount < 2;
     downloadZipBtn.style.display = completedCount >= 2 ? 'block' : 'none';
+    downloadAllBtn.disabled = completedCount < 2;
+    downloadAllBtn.style.display = completedCount >= 2 ? 'block' : 'none';
 
     if (allFiles.length === 0) {
         queueContainer.innerHTML = '<div class="empty-state"><p>No files</p></div>';
@@ -355,7 +343,7 @@ function updateQueueUI() {
             </div>
         </div>
     `).join('');
-    
+
     // Render previews for completed items
     allFiles.forEach(item => {
         if (item.status === 'completed' && item.outputData) {
@@ -368,9 +356,9 @@ function updateQueueUI() {
 function renderPreview(item) {
     const previewEl = document.getElementById(`preview-${item.id}`);
     if (!previewEl) return;
-    
+
     let url;
-    
+
     if (item.type === 'paa') {
         // PAA→PNG: show the PNG output
         const blob = new Blob([item.outputData]);
@@ -379,7 +367,7 @@ function renderPreview(item) {
         // Image→PAA: show the original input image
         url = URL.createObjectURL(item.file);
     }
-    
+
     const img = document.createElement('img');
     img.src = url;
     img.onload = () => URL.revokeObjectURL(url);
@@ -413,14 +401,14 @@ function processQueue() {
     const processNext = async () => {
         for (let i = 0; i < allFiles.length; i++) {
             const item = allFiles[i];
-            
+
             if (item.status !== 'pending') {
                 continue; // Skip already processed items
             }
 
             item.status = 'processing';
             updateQueueUI();
-            
+
             // Check if item was removed while processing
             if (!allFiles.includes(item)) {
                 continue;
@@ -428,7 +416,7 @@ function processQueue() {
 
             try {
                 const fileData = await item.file.arrayBuffer();
-                
+
                 // Send to worker for conversion
                 const conversionId = item.id;
                 const result = await new Promise(resolve => {
@@ -438,13 +426,13 @@ function processQueue() {
                         fileData,
                         fileType: item.type
                     };
-                    
+
                     // Add resize dimensions if available
                     if (item.targetDimensions) {
                         messageData.targetWidth = item.targetDimensions.width;
                         messageData.targetHeight = item.targetDimensions.height;
                     }
-                    
+
                     worker.postMessage(messageData, [fileData]);
                 });
 
@@ -508,13 +496,13 @@ async function downloadAllAsZip() {
 
     try {
         const zip = new JSZip();
-        
+
         completed.forEach(file => {
             const ext = file.name.split('.').pop().toLowerCase();
             const outputExt = ext === 'paa' ? 'png' : 'paa';
             const baseName = file.name.replace(/\.[^.]+$/, '');
             const outputName = `${baseName}.${outputExt}`;
-            
+
             zip.file(outputName, file.outputData);
         });
 
@@ -527,7 +515,7 @@ async function downloadAllAsZip() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
+
         showToast('Downloaded as ZIP', 'success');
     } catch (error) {
         console.error('Error creating ZIP:', error);
@@ -536,7 +524,7 @@ async function downloadAllAsZip() {
 }
 
 // Download all results
-function downloadAllResults() {
+function downloadAll() {
     const completed = allFiles.filter(f => f.status === 'completed');
     if (completed.length === 0) return;
 

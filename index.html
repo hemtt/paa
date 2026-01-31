@@ -28,7 +28,6 @@
         </header>
 
         <main class="main">
-            <!-- Upload Section -->
             <section class="upload-section">
                 <div class="upload-box" id="upload-box">
                     <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -46,9 +45,6 @@
                 </div>
             </section>
 
-
-
-            <!-- Queue Section -->
             <section class="queue-section">
                 <h2>Files</h2>
                 <div id="queue-container" class="queue-container">
@@ -58,7 +54,10 @@
                 </div>
                 <div class="queue-actions">
                     <button id="clear-btn" class="btn btn-secondary" disabled>Clear All</button>
-                    <button id="download-zip-btn" class="btn btn-primary" disabled style="display: none;">Download Zip</button>
+                    <div class="download-buttons">
+                        <button id="download-zip-btn" class="btn btn-primary" disabled style="display: none;">Download Zip</button>
+                        <button id="download-all-btn" class="btn btn-primary" disabled style="display: none;">Download All</button>
+                    </div>
                 </div>
             </section>
         </main>
@@ -67,8 +66,6 @@
             <p>Works offline • All processing happens in your browser</p>
         </footer>
     </div>
-
-    <!-- Progress Modal -->
 
     <!-- Error Toast -->
     <div id="error-toast" class="toast"></div>
