@@ -1,0 +1,26 @@
+{
+  "name": "paa-converter-pwa",
+  "version": "1.0.0",
+  "description": "Progressive Web App for converting images to and from PAA format used by Arma 3",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080",
+    "build": "echo 'No build step required - ready to serve'",
+    "serve": "npx http-server -p 8080 -c-1 --gzip"
+  },
+  "keywords": [
+    "paa",
+    "arma3",
+    "image-converter",
+    "pwa",
+    "wasm",
+    "webassembly"
+  ],
+  "author": "",
+  "license": "GPL-2.0",
+  "dependencies": {
+    "hemtt-paa": "file:./pkg"
+  },
+  "devDependencies": {}
+}

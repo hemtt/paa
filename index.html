@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Convert images to and from PAA format used by Arma 3">
+    <meta name="theme-color" content="#2c3e50">
+    <title>PAA Converter - Arma 3 Image Converter</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="hemtt.ico">
+    <link rel="apple-touch-icon" href="hemtt.ico">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <img src="https://raw.githubusercontent.com/BrettMayson/HEMTT/main/book/logo.png" alt="HEMTT Logo" class="header-logo">
+                <div class="header-text">
+                    <h1>HEMTT PAA Converter</h1>
+                </div>
+            </div>
+        </header>
+
+        <main class="main">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-box" id="upload-box">
+                    <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <h2>Drop files here or click to upload</h2>
+                    <p>Supports: PNG, JPG, BMP, TGA, PAA</p>
+                    <input 
+                        type="file" 
+                        id="file-input" 
+                        multiple 
+                        accept="image/png,image/jpeg,image/bmp,.tga,.paa"
+                        hidden
+                    >
+                </div>
+            </section>
+
+
+
+            <!-- Queue Section -->
+            <section class="queue-section">
+                <h2>Files</h2>
+                <div id="queue-container" class="queue-container">
+                    <div class="empty-state">
+                        <p>No files</p>
+                    </div>
+                </div>
+                <div class="queue-actions">
+                    <button id="clear-btn" class="btn btn-secondary" disabled>Clear All</button>
+                    <button id="download-zip-btn" class="btn btn-primary" disabled style="display: none;">Download Zip</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>Works offline • All processing happens in your browser</p>
+        </footer>
+    </div>
+
+    <!-- Progress Modal -->
+
+    <!-- Error Toast -->
+    <div id="error-toast" class="toast"></div>
+
+    <!-- JSZip Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

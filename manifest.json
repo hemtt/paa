@@ -1,0 +1,20 @@
+{
+  "name": "HEMTT PAA Converter",
+  "short_name": "PAA Converter",
+  "description": "Convert images to and from PAA format used by Arma 3. Works offline in your browser.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#2c3e50",
+  "icons": [
+    {
+      "src": "hemtt.ico",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["productivity", "utilities"]
+}
