@@ -109,6 +109,10 @@ body {
     transition: var(--transition);
 }
 
+.header-links a:visited {
+    color: var(--primary-color);
+}
+
 .header-links a:hover {
     color: var(--primary-dark);
     background: rgba(52, 152, 219, 0.1);
