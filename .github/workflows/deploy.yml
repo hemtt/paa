@@ -33,6 +33,9 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
+          
+      - name: Verify pkg directory exists
+        run: ls -la pkg/ || echo "pkg directory not found"
 
       - name: Deploy to GitHub Pages
         id: deployment

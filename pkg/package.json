@@ -1,0 +1,17 @@
+{
+  "name": "hemtt-paa",
+  "type": "module",
+  "description": "A PAA library for hemtt",
+  "version": "1.0.1",
+  "license": "GPL-2.0",
+  "files": [
+    "hemtt_paa_bg.wasm",
+    "hemtt_paa.js",
+    "hemtt_paa.d.ts"
+  ],
+  "main": "hemtt_paa.js",
+  "types": "hemtt_paa.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
