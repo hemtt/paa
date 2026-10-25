@@ -2,7 +2,7 @@
   "name": "hemtt-paa",
   "type": "module",
   "description": "A PAA library for hemtt",
-  "version": "1.0.1",
+  "version": "1.23.2",
   "license": "GPL-2.0",
   "files": [
     "hemtt_paa_bg.wasm",

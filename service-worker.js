@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paa-converter-v1';
+const CACHE_NAME = 'paa-converter-v4';
 const FILES_TO_CACHE = [
     '/',
     '/index.html',
@@ -46,6 +46,21 @@ self.addEventListener('activate', (event) => {
 });
 
 // Fetch Event - Network First, then Cache
+// Every response gets cross-origin isolation headers so SharedArrayBuffer (needed for threaded wasm) is available on hosts that can't set them, such as GitHub Pages
+function withIsolationHeaders(response) {
+    if (!response || response.status === 0) {
+        return response;
+    }
+    const headers = new Headers(response.headers);
+    headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+    headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+    return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+    });
+}
+
 self.addEventListener('fetch', (event) => {
     // Skip non-GET requests
     if (event.request.method !== 'GET') {
@@ -62,17 +77,17 @@ self.addEventListener('fetch', (event) => {
                         cache.put(event.request, responseToCache);
                     });
                 }
-                return response;
+                return withIsolationHeaders(response);
             })
             .catch(() => {
                 // Return cached response on network failure
                 return caches.match(event.request).then((response) => {
                     if (response) {
-                        return response;
+                        return withIsolationHeaders(response);
                     }
                     // Return offline page if needed
                     if (event.request.destination === 'document') {
-                        return caches.match('/index.html');
+                        return caches.match('/index.html').then((page) => page && withIsolationHeaders(page));
                     }
                 });
             })

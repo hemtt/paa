@@ -1,4 +1,4 @@
-import init, { FromPaaResult, ToPaaResult } from './pkg/hemtt_paa.js';
+import init, { FromPaaResult, ToPaaResult, initThreadPool } from './pkg/hemtt_paa.js';
 
 let wasmReady = false;
 let wasmMemoryBuffer = null;
@@ -55,6 +55,10 @@ function extractPngDimensions(uint8Array) {
 async function initWasm() {
     try {
         const wasmModule = await init();
+        if (!self.crossOriginIsolated) {
+            throw new Error('Page is not cross-origin isolated; reload to enable threaded conversion');
+        }
+        await initThreadPool(navigator.hardwareConcurrency || 4);
         wasmMemoryBuffer = wasmModule.memory;
         if (!wasmMemoryBuffer) {
             throw new Error('WASM memory not available after initialization');

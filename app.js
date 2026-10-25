@@ -568,14 +568,22 @@ window.addEventListener('offline', () => {
 });
 
 // Register Service Worker
+// The service worker adds cross-origin isolation headers, which only apply to pages loaded through it, so reload once per session if the page isn't isolated yet
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').catch(err => {
-        console.log('Service Worker registration failed:', err);
-    });
+    navigator.serviceWorker.register('service-worker.js')
+        .then(() => navigator.serviceWorker.ready)
+        .then(() => {
+            if (!crossOriginIsolated && !sessionStorage.getItem('coiReloaded')) {
+                sessionStorage.setItem('coiReloaded', '1');
+                location.reload();
+            }
+        })
+        .catch(err => {
+            console.log('Service Worker registration failed:', err);
+        });
 }
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     initWorker();
-    initWasm();
 });
